@@ -103,7 +103,7 @@
 
   /* tabla con scroll horizontal en móvil */
   .panel{overflow-x:auto}
-  table{min-width:640px}
+  table{min-width:760px}
 </style>
 </head>
 <body>
@@ -157,7 +157,7 @@
     </div>
     <div class="panel">
       <table>
-        <thead><tr><th>Vencimiento</th><th>Expediente</th><th>Descripción</th><th>Tipo</th><th>Días</th><th>Estado</th><th></th></tr></thead>
+        <thead><tr><th>Vencimiento</th><th>Expediente</th><th>Descripción</th><th>Tipo</th><th>Responsable</th><th>Días</th><th>Estado</th><th></th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -213,6 +213,8 @@
       <option>Procesal</option><option>Contractual</option><option>Mercantil</option>
       <option>Fiscal</option><option>Administrativo</option><option>Otro</option>
     </select>
+    <label class="fld-lbl">Responsable</label>
+    <input type="text" id="m-resp" placeholder="Abogado/a a cargo">
     <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.92rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink)">
       <input type="checkbox" id="m-hecho" style="width:auto"> Marcar como completado
     </label>
@@ -227,11 +229,11 @@
 <script>
   const HOY = new Date(2026, 5, 5); // 5 jun 2026
   const SEED = [
-    { fecha:"2026-06-10", exp:"EXP-DEL-2024/003", desc:"Interposición demanda principal tras cautelares", tipo:"Procesal" },
-    { fecha:"2026-06-30", exp:"EXP-SOL-2024/001", desc:"Firma contrato arrendamiento definitivo", tipo:"Contractual" },
-    { fecha:"2026-07-15", exp:"DESPACHO", desc:"Declaración trimestral IVA 2T", tipo:"Fiscal" },
-    { fecha:"2026-08-15", exp:"EXP-DEL-2024/002", desc:"Condición suspensiva financiación nave", tipo:"Contractual" },
-    { fecha:"2026-12-31", exp:"EXP-NAV-2023/001", desc:"Depósito cuentas anuales 2023 (Navarro)", tipo:"Mercantil" },
+    { fecha:"2026-06-10", exp:"EXP-DEL-2024/003", desc:"Interposición demanda principal tras cautelares", tipo:"Procesal", resp:"Andrés Escobar" },
+    { fecha:"2026-06-30", exp:"EXP-SOL-2024/001", desc:"Firma contrato arrendamiento definitivo", tipo:"Contractual", resp:"Andrés Escobar" },
+    { fecha:"2026-07-15", exp:"DESPACHO", desc:"Declaración trimestral IVA 2T", tipo:"Fiscal", resp:"Administración" },
+    { fecha:"2026-08-15", exp:"EXP-DEL-2024/002", desc:"Condición suspensiva financiación nave", tipo:"Contractual", resp:"Andrés Escobar" },
+    { fecha:"2026-12-31", exp:"EXP-NAV-2023/001", desc:"Depósito cuentas anuales 2023 (Navarro)", tipo:"Mercantil", resp:"Andrés Escobar" },
   ];
 
   // ===== Persistencia en el navegador =====
@@ -266,12 +268,13 @@
 
     const filt = rows.filter(r =>
       (!fe || r.est===fe) &&
-      (!q || (r.exp+r.desc).toLowerCase().includes(q)));
+      (!q || (r.exp+r.desc+(r.resp||"")).toLowerCase().includes(q)));
     document.getElementById("tbody").innerHTML = filt.map(r=>`
       <tr style="${r.est==='Completado'?'opacity:.55':''}">
         <td>${r.fecha}</td><td>${r.exp}</td>
         <td style="${r.est==='Completado'?'text-decoration:line-through':''}">${r.desc}</td>
         <td>${r.tipo}</td>
+        <td>${r.resp||'—'}</td>
         <td>${r.est==='Completado'?'—':r.d+' d'}</td>
         <td><span class="tag ${TAG[r.est]}">${r.est}</span></td>
         <td>
@@ -290,9 +293,9 @@
     editIndex = (idx===undefined) ? null : idx;
     $("modalTitle").textContent = editIndex===null ? "Añadir término" : "Editar término";
     $("m-delete").style.display = editIndex===null ? "none" : "inline-block";
-    const p = editIndex===null ? {fecha:"",exp:"",desc:"",tipo:"Procesal",hecho:false} : PLAZOS[editIndex];
+    const p = editIndex===null ? {fecha:"",exp:"",desc:"",tipo:"Procesal",resp:"",hecho:false} : PLAZOS[editIndex];
     $("m-fecha").value=p.fecha; $("m-exp").value=p.exp; $("m-desc").value=p.desc; $("m-tipo").value=p.tipo;
-    $("m-hecho").checked = !!p.hecho;
+    $("m-resp").value=p.resp||""; $("m-hecho").checked = !!p.hecho;
     $("modalBg").classList.add("open");
   }
   function cerrarModal(){ $("modalBg").classList.remove("open"); }
@@ -302,7 +305,7 @@
   $("m-cancel").addEventListener("click", cerrarModal);
   $("modalBg").addEventListener("click", e=>{ if(e.target===$("modalBg")) cerrarModal(); });
   $("m-save").addEventListener("click", ()=>{
-    const reg = { fecha:$("m-fecha").value, exp:$("m-exp").value.trim(), desc:$("m-desc").value.trim(), tipo:$("m-tipo").value, hecho:$("m-hecho").checked };
+    const reg = { fecha:$("m-fecha").value, exp:$("m-exp").value.trim(), desc:$("m-desc").value.trim(), tipo:$("m-tipo").value, resp:$("m-resp").value.trim(), hecho:$("m-hecho").checked };
     if(!reg.fecha || !reg.exp || !reg.desc){ alert("Completa fecha, expediente y descripción."); return; }
     if(editIndex===null) PLAZOS.push(reg); else PLAZOS[editIndex]=reg;
     save(); cerrarModal(); render();
