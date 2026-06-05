@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Portal de Términos — control interno de vencimientos procesales por expediente.">
+<title>Portal de Términos — Bufete</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23172230'/%3E%3Cg stroke='%237c2f38' stroke-width='3' fill='none' stroke-linecap='round'%3E%3Cline x1='32' y1='14' x2='32' y2='50'/%3E%3Cline x1='18' y1='22' x2='46' y2='22'/%3E%3Cpath d='M18 22 L12 34 a6 6 0 0 0 12 0 Z'/%3E%3Cpath d='M46 22 L40 34 a6 6 0 0 0 12 0 Z'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#172230;--navy-2:#22303f;--gold:#7c2f38;--ink:#222831;--muted:#737d88;
+    --bg:#f4f5f3;--card:#ffffff;--line:#e3e5e1;--soft:#eceeea;
+    --red:#8f2e2e;--amber:#9a6b2f;--green:#3f6b53;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* HERO */
+  header.hero{background:var(--navy);color:#fff;padding:46px 0 40px;border-bottom:2px solid var(--gold)}
+  header.hero .wrap{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px}
+  .brand h1{font-family:'Fraunces',serif;font-size:2.3rem;font-weight:700}
+  .brand p{color:#cbd9ec;font-size:1.02rem;margin-top:4px}
+  .today{font-size:.85rem;color:#cbd9ec;text-align:right}
+  .today b{color:var(--gold)}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:-26px 0 8px;position:relative;z-index:2}
+  @media(max-width:720px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 10px 26px -18px rgba(31,58,95,.5)}
+  .stat .n{font-family:'Fraunces',serif;font-size:2rem;font-weight:700;color:var(--navy)}
+  .stat .l{font-size:.86rem;color:var(--muted);margin-top:2px}
+  .stat.alert .n{color:var(--red)}
+  .stat.warn .n{color:var(--amber)}
+
+  section{margin-top:34px}
+  .sec-title{font-family:'Fraunces',serif;font-size:1.35rem;color:var(--navy);margin-bottom:14px}
+
+  /* ALERTAS */
+  .alerts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .alert-card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:11px;padding:16px 18px}
+  .alert-card.amber{border-left-color:var(--amber)}
+  .alert-card .exp{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .alert-card .desc{font-weight:600;margin:4px 0 8px}
+  .alert-card .days{font-size:.85rem;font-weight:700;color:var(--red)}
+  .alert-card.amber .days{color:var(--amber)}
+
+  /* TABLA */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .toolbar input,.toolbar select{font-family:'Inter';font-size:.9rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  .toolbar input{flex:1;min-width:180px}
+  .btn{font-family:'Inter';font-weight:600;font-size:.9rem;padding:9px 16px;border:none;border-radius:9px;background:var(--navy);color:#fff;cursor:pointer}
+  .btn:hover{background:var(--navy-2)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line)}
+  th{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fafbfd}
+  .tag{display:inline-block;font-size:.74rem;font-weight:700;padding:3px 11px;border-radius:20px}
+  .t-urg{background:#fbe9e7;color:var(--red)}
+  .t-prox{background:#f7efda;color:var(--amber)}
+  .t-ok{background:#e7f3ed;color:var(--green)}
+  .t-done{background:#e2e6e2;color:#5a6b5e}
+
+  footer{margin:48px 0 30px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  footer a{color:var(--gold);text-decoration:none}
+
+  /* acciones en tabla */
+  .row-act{color:var(--gold);font-weight:600;cursor:pointer;font-size:.84rem}
+  .row-act:hover{text-decoration:underline}
+
+  /* calculadora */
+  .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:720px){.calc-grid{grid-template-columns:1fr 1fr}}
+  .fld-lbl{display:block;font-size:.76rem;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+  .calc-grid input,.calc-grid select,.modal input,.modal select{width:100%;font-family:'Inter';font-size:.92rem;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  .calc-out{margin-top:18px;font-size:1.05rem;color:var(--ink)}
+  .calc-out b{font-family:'Fraunces',serif;color:var(--navy);font-size:1.4rem}
+
+  /* modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(23,34,48,.55);align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:26px 28px;width:100%;max-width:440px;box-shadow:0 30px 70px -20px rgba(0,0,0,.4)}
+  .modal h3{font-family:'Fraunces',serif;color:var(--navy);font-size:1.4rem;margin-bottom:16px}
+  .modal label{margin-top:12px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .btn.ghost:hover{background:var(--soft)}
+  .btn.ghost.danger{color:var(--red);border-color:#e6c9c9}
+
+  /* entrada sutil */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .stats,section{animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) both}
+  section:nth-of-type(1){animation-delay:.05s}
+  section:nth-of-type(2){animation-delay:.12s}
+  section:nth-of-type(3){animation-delay:.19s}
+  section:nth-of-type(4){animation-delay:.26s}
+  @media (prefers-reduced-motion: reduce){ .stats,section{animation:none} }
+
+  /* tabla con scroll horizontal en móvil */
+  .panel{overflow-x:auto}
+  table{min-width:640px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Portal de Términos</h1>
+      <p>Control interno de vencimientos por expediente</p>
+    </div>
+    <div class="today">Hoy: <b>5 de junio de 2026</b><br>Bufete · uso interno</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="stats">
+    <div class="stat alert"><div class="n" id="st-urg">—</div><div class="l">Términos urgentes (≤ 7 días)</div></div>
+    <div class="stat warn"><div class="n" id="st-prox">—</div><div class="l">Próximos (8–30 días)</div></div>
+    <div class="stat"><div class="n" id="st-total">—</div><div class="l">Términos activos en total</div></div>
+  </div>
+
+  <!-- BENEFICIOS / VALOR -->
+  <section>
+    <div class="alerts">
+      <div class="alert-card amber"><div class="exp">Por qué</div><div class="desc">Cero términos perdidos</div><div class="days" style="color:var(--muted);font-weight:500">Cada vencimiento a la vista, ordenado por urgencia.</div></div>
+      <div class="alert-card amber"><div class="exp">Por qué</div><div class="desc">Todo en un sitio</div><div class="days" style="color:var(--muted);font-weight:500">Expedientes, fechas y estado, sin abrir diez carpetas.</div></div>
+      <div class="alert-card amber"><div class="exp">Por qué</div><div class="desc">Acción inmediata</div><div class="days" style="color:var(--muted);font-weight:500">El portal destaca lo que vence esta semana.</div></div>
+    </div>
+  </section>
+
+  <!-- ALERTAS DE LA SEMANA -->
+  <section>
+    <div class="sec-title">⚠️ Atención inmediata</div>
+    <div class="alerts" id="alertBox"></div>
+  </section>
+
+  <!-- TABLA -->
+  <section>
+    <div class="sec-title">Todos los términos</div>
+    <div class="toolbar">
+      <input id="search" placeholder="Buscar por expediente o descripción…">
+      <select id="filterEstado">
+        <option value="">Todos los estados</option>
+        <option value="Urgente">Urgente</option>
+        <option value="Próximo">Próximo</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Completado">Completado</option>
+      </select>
+      <button class="btn" id="addBtn">+ Añadir término</button>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Vencimiento</th><th>Expediente</th><th>Descripción</th><th>Tipo</th><th>Días</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CALCULADORA -->
+  <section>
+    <div class="sec-title">🧮 Calculadora de vencimientos</div>
+    <div class="panel" style="padding:20px 22px">
+      <div class="calc-grid">
+        <div>
+          <label class="fld-lbl">Fecha base</label>
+          <input type="date" id="calc-base" value="2026-06-05">
+        </div>
+        <div>
+          <label class="fld-lbl">Término (días)</label>
+          <input type="number" id="calc-dias" value="20" min="1">
+        </div>
+        <div>
+          <label class="fld-lbl">Tipo de días</label>
+          <select id="calc-tipo">
+            <option value="calendario">Calendario</option>
+            <option value="habiles">Hábiles (excluye fines de semana y festivos PA)</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" id="calc-btn" style="width:100%">Calcular</button>
+        </div>
+      </div>
+      <div id="calc-out" class="calc-out"></div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:12px">Los días hábiles excluyen sábados, domingos y los festivos/duelo nacionales de Panamá. Los festivos movibles (Carnaval, Viernes Santo) se actualizan cada año en la lista <code>FESTIVOS_PA</code> del código.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Portal de Términos · uso interno del bufete · © <span id="year"></span></span>
+    <span>Rebundle · generado con <a href="https://rebundle.ai">/viz</a></span>
+  </footer>
+</div>
+
+<!-- MODAL AÑADIR/EDITAR -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Añadir término</h3>
+    <label class="fld-lbl">Fecha de vencimiento</label>
+    <input type="date" id="m-fecha">
+    <label class="fld-lbl">Expediente</label>
+    <input type="text" id="m-exp" placeholder="EXP-XXX-2026/001">
+    <label class="fld-lbl">Descripción</label>
+    <input type="text" id="m-desc" placeholder="Presentación de escrito…">
+    <label class="fld-lbl">Tipo</label>
+    <select id="m-tipo">
+      <option>Procesal</option><option>Contractual</option><option>Mercantil</option>
+      <option>Fiscal</option><option>Administrativo</option><option>Otro</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.92rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--ink)">
+      <input type="checkbox" id="m-hecho" style="width:auto"> Marcar como completado
+    </label>
+    <div class="modal-actions">
+      <button class="btn ghost" id="m-cancel">Cancelar</button>
+      <button class="btn ghost danger" id="m-delete" style="display:none">Eliminar</button>
+      <button class="btn" id="m-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const HOY = new Date(2026, 5, 5); // 5 jun 2026
+  const SEED = [
+    { fecha:"2026-06-10", exp:"EXP-DEL-2024/003", desc:"Interposición demanda principal tras cautelares", tipo:"Procesal" },
+    { fecha:"2026-06-30", exp:"EXP-SOL-2024/001", desc:"Firma contrato arrendamiento definitivo", tipo:"Contractual" },
+    { fecha:"2026-07-15", exp:"DESPACHO", desc:"Declaración trimestral IVA 2T", tipo:"Fiscal" },
+    { fecha:"2026-08-15", exp:"EXP-DEL-2024/002", desc:"Condición suspensiva financiación nave", tipo:"Contractual" },
+    { fecha:"2026-12-31", exp:"EXP-NAV-2023/001", desc:"Depósito cuentas anuales 2023 (Navarro)", tipo:"Mercantil" },
+  ];
+
+  // ===== Persistencia en el navegador =====
+  const KEY = "portal_plazos";
+  let PLAZOS = load();
+  function load(){ try{ const s=localStorage.getItem(KEY); return s?JSON.parse(s):SEED.slice(); }catch(e){ return SEED.slice(); } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(PLAZOS)); }catch(e){} }
+
+  function dias(f){ return Math.round((new Date(f+"T00:00:00") - HOY) / 86400000); }
+  function estado(p,d){ return p.hecho ? "Completado" : d <= 7 ? "Urgente" : d <= 30 ? "Próximo" : "Pendiente"; }
+  const TAG = { "Urgente":"t-urg", "Próximo":"t-prox", "Pendiente":"t-ok", "Completado":"t-done" };
+
+  function render(){
+    const q = (document.getElementById("search").value || "").toLowerCase();
+    const fe = document.getElementById("filterEstado").value;
+    const rows = PLAZOS
+      .map((p,i) => ({...p, _i:i, d: dias(p.fecha), est: estado(p, dias(p.fecha))}))
+      .sort((a,b) => (a.est==="Completado") - (b.est==="Completado") || a.d - b.d);
+
+    document.getElementById("st-urg").textContent  = rows.filter(r=>r.est==="Urgente").length;
+    document.getElementById("st-prox").textContent = rows.filter(r=>r.est==="Próximo").length;
+    document.getElementById("st-total").textContent= rows.filter(r=>r.est!=="Completado").length;
+
+    const ab = document.getElementById("alertBox");
+    const al = rows.filter(r => r.est==="Urgente" || r.est==="Próximo").slice(0,4);
+    ab.innerHTML = al.length ? al.map(r=>`
+      <div class="alert-card ${r.est==='Próximo'?'amber':''}">
+        <div class="exp">${r.exp}</div>
+        <div class="desc">${r.desc}</div>
+        <div class="days">Vence en ${r.d} días · ${r.fecha}</div>
+      </div>`).join("") : `<p style="color:var(--muted)">Sin términos urgentes próximos. 👌</p>`;
+
+    const filt = rows.filter(r =>
+      (!fe || r.est===fe) &&
+      (!q || (r.exp+r.desc).toLowerCase().includes(q)));
+    document.getElementById("tbody").innerHTML = filt.map(r=>`
+      <tr style="${r.est==='Completado'?'opacity:.55':''}">
+        <td>${r.fecha}</td><td>${r.exp}</td>
+        <td style="${r.est==='Completado'?'text-decoration:line-through':''}">${r.desc}</td>
+        <td>${r.tipo}</td>
+        <td>${r.est==='Completado'?'—':r.d+' d'}</td>
+        <td><span class="tag ${TAG[r.est]}">${r.est}</span></td>
+        <td>
+          <span class="row-act" onclick="toggleHecho(${r._i})">${r.hecho?'Reabrir':'✓ Completar'}</span>
+          &nbsp;·&nbsp;<span class="row-act" onclick="editar(${r._i})">Editar</span>
+        </td>
+      </tr>`).join("");
+  }
+
+  window.toggleHecho = i => { PLAZOS[i].hecho = !PLAZOS[i].hecho; save(); render(); };
+
+  // ===== Modal añadir/editar =====
+  let editIndex = null;
+  const $ = id => document.getElementById(id);
+  function abrirModal(idx){
+    editIndex = (idx===undefined) ? null : idx;
+    $("modalTitle").textContent = editIndex===null ? "Añadir término" : "Editar término";
+    $("m-delete").style.display = editIndex===null ? "none" : "inline-block";
+    const p = editIndex===null ? {fecha:"",exp:"",desc:"",tipo:"Procesal",hecho:false} : PLAZOS[editIndex];
+    $("m-fecha").value=p.fecha; $("m-exp").value=p.exp; $("m-desc").value=p.desc; $("m-tipo").value=p.tipo;
+    $("m-hecho").checked = !!p.hecho;
+    $("modalBg").classList.add("open");
+  }
+  function cerrarModal(){ $("modalBg").classList.remove("open"); }
+  window.editar = abrirModal;
+
+  $("addBtn").addEventListener("click", ()=>abrirModal());
+  $("m-cancel").addEventListener("click", cerrarModal);
+  $("modalBg").addEventListener("click", e=>{ if(e.target===$("modalBg")) cerrarModal(); });
+  $("m-save").addEventListener("click", ()=>{
+    const reg = { fecha:$("m-fecha").value, exp:$("m-exp").value.trim(), desc:$("m-desc").value.trim(), tipo:$("m-tipo").value, hecho:$("m-hecho").checked };
+    if(!reg.fecha || !reg.exp || !reg.desc){ alert("Completa fecha, expediente y descripción."); return; }
+    if(editIndex===null) PLAZOS.push(reg); else PLAZOS[editIndex]=reg;
+    save(); cerrarModal(); render();
+  });
+  $("m-delete").addEventListener("click", ()=>{
+    if(editIndex!==null && confirm("¿Eliminar este término?")){ PLAZOS.splice(editIndex,1); save(); cerrarModal(); render(); }
+  });
+
+  $("search").addEventListener("input", render);
+  $("filterEstado").addEventListener("change", render);
+
+  // ===== Festivos nacionales y de duelo de Panamá =====
+  // Fechas fijas + movibles por año (Carnaval y Viernes Santo cambian: revisar cada año).
+  const FESTIVOS_PA = new Set([
+    // Fijos
+    "2026-01-01", // Año Nuevo
+    "2026-01-09", // Día de los Mártires (duelo nacional)
+    "2026-05-01", // Día del Trabajador
+    "2026-11-03", // Separación de Panamá de Colombia
+    "2026-11-04", // Día de los Símbolos Patrios (Bandera)
+    "2026-11-05", // Día de Colón
+    "2026-11-10", // Primer Grito de Independencia (Los Santos)
+    "2026-11-28", // Independencia de España
+    "2026-12-08", // Día de las Madres
+    "2026-12-20", // Día de Duelo Nacional (1989)
+    "2026-12-25", // Navidad
+    // Movibles 2026 (verificar cada año)
+    "2026-02-16", // Lunes de Carnaval
+    "2026-02-17", // Martes de Carnaval
+    "2026-04-03", // Viernes Santo
+  ]);
+  const esHabil = d => { const wd=d.getDay(); return wd!==0 && wd!==6 && !FESTIVOS_PA.has(d.toISOString().slice(0,10)); };
+
+  // ===== Calculadora de vencimientos =====
+  function calcular(){
+    const base = $("calc-base").value;
+    const n = parseInt($("calc-dias").value,10);
+    if(!base || !n){ $("calc-out").innerHTML=""; return; }
+    let d = new Date(base+"T00:00:00");
+    if($("calc-tipo").value==="calendario"){
+      d.setDate(d.getDate()+n);
+    } else {
+      let added=0;
+      while(added<n){ d.setDate(d.getDate()+1); if(esHabil(d)) added++; }
+    }
+    const iso = d.toISOString().slice(0,10);
+    const restantes = Math.round((d-HOY)/86400000);
+    const tipoTxt = $("calc-tipo").value==="calendario" ? "días calendario" : "días hábiles";
+    $("calc-out").innerHTML = `${n} ${tipoTxt} → vence el <b>${iso}</b> &nbsp;·&nbsp; ${restantes} días naturales desde hoy.`;
+  }
+  $("calc-btn").addEventListener("click", calcular);
+
+  // Año automático en el copyright
+  $("year").textContent = new Date().getFullYear();
+
+  render();
+</script>
+</body>
+</html>
